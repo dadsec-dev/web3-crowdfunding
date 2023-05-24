@@ -47,11 +47,9 @@ contract CrowdFunding {
 
         campaign.donations.push(amount);
 
-        // (bool paid, ) = payable(campaign.owner).call{value: amount}("");
+        (bool success,)  = payable(campaign.owner).call{value: amount}("");
 
-        (bool paid, ) = payable(campaign.owner).call{value: amount} ("");
-
-        if(paid) {
+        if(success) {
             campaign.amountCollected = campaign.amountCollected + amount;
         }
     }
