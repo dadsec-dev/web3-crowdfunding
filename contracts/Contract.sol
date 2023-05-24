@@ -20,6 +20,7 @@ contract CrowdFunding {
     uint256 public numberOfCampaigns = 0;
 
     function createCampaign(address _owner, string memory _title, string memory _description, uint256 _targetAmount, uint256 _deadline, string memory _image) public returns (uint256){
+       
         Campaign storage campaign = campaigns[numberOfCampaigns];
 
         require(_deadline > block.timestamp, "Should be a date in the future");
@@ -38,15 +39,36 @@ contract CrowdFunding {
         return numberOfCampaigns - 1;
     }
 
-    function donateToCampaign() {
+    function donateToCampaign(uint256 _id) public payable{
+        uint256 amount = msg.value;
 
+        Campaign storage campaign = campaigns[_id];
+        campaign.donators.push(msg.sender);
+
+        campaign.donations.push(amount);
+
+        // (bool paid, ) = payable(campaign.owner).call{value: amount}("");
+
+        (bool paid, ) = payable(campaign.owner).call{value: amount} ("");
+
+        if(paid) {
+            campaign.amountCollected = campaign.amountCollected + amount;
+        }
     }
 
-    function getDonators() {
-
+    function getDonators(uint256 _id) public view returns (address[] memory, uint256[] memory){
+        return (campaigns[_id].donators, campaigns[_id].donations);
     }
 
-    function getCampaigns() {
-        
+    function getCampaigns() public view returns(Campaign[] memory) {
+        Campaign[] memory allCampaigns = new Campaign[](numberOfCampaigns);
+
+        for(uint i = 0; i < numberOfCampaigns; i++) {
+            Campaign storage item = campaigns[i];
+
+            allCampaigns[i] = item;
+        }
+
+        return allCampaigns;
     }
 }
